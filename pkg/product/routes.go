@@ -1,37 +1,33 @@
-package routes
+
+
+
+
+package product
 
 import (
-    "context"
-    "net/http"
-
     "github.com/gin-gonic/gin"
-    "github.com/SethukumarJ/go-grpc-api-gateway/pkg/product/pb"
+    "github.com/SethukumarJ/go-grpc-api-gateway/pkg/auth"
+    "github.com/SethukumarJ/go-grpc-api-gateway/pkg/config"
+    "github.com/SethukumarJ/go-grpc-api-gateway/pkg/product/routes"
 )
 
-type CreateProductRequestBody struct {
-    Name  string `json:"name"`
-    Stock int64  `json:"stock"`
-    Price int64  `json:"price"`
+func RegisterRoutes(r *gin.Engine, c *config.Config, authSvc *auth.ServiceClient) {
+    a := auth.InitAuthMiddleware(authSvc)
+
+    svc := &ServiceClient{
+        Client: InitServiceClient(c),
+    }
+
+    routes := r.Group("/product")
+    routes.Use(a.AuthRequired)
+    routes.POST("/", svc.CreateProduct)
+    routes.GET("/:id", svc.FindOne)
 }
 
-func CreateProduct(ctx *gin.Context, c pb.ProductServiceClient) {
-    body := CreateProductRequestBody{}
+func (svc *ServiceClient) FindOne(ctx *gin.Context) {
+    routes.FineOne(ctx, svc.Client)
+}
 
-    if err := ctx.BindJSON(&body); err != nil {
-        ctx.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
-
-    res, err := c.CreateProduct(context.Background(), &pb.CreateProductRequest{
-        Name:  body.Name,
-        Stock: body.Stock,
-        Price: body.Price,
-    })
-
-    if err != nil {
-        ctx.AbortWithError(http.StatusBadGateway, err)
-        return
-    }
-
-    ctx.JSON(http.StatusCreated, &res)
+func (svc *ServiceClient) CreateProduct(ctx *gin.Context) {
+    routes.CreateProduct(ctx, svc.Client)
 }
