@@ -1,24 +1,24 @@
 package auth
 
 import (
-    "fmt"
+	"fmt"
 
-    "github.com/SethukumarJ/go-grpc-api-gateway/pkg/auth/pb"
-    "github.com/SethukumarJ/go-grpc-api-gateway/pkg/config"
-    "google.golang.org/grpc"
+	"github.com/SethukumarJ/go-grpc-api-gateway/pkg/auth/pb"
+	"github.com/SethukumarJ/go-grpc-api-gateway/pkg/config"
+	"google.golang.org/grpc"
 )
 
 type ServiceClient struct {
-    Client pb.AuthServiceClient
+	Client pb.AuthServiceClient
 }
 
 func InitServiceClient(c *config.Config) pb.AuthServiceClient {
-    // using WithInsecure() because no SSL running
-    cc, err := grpc.Dial(c.AuthSvcUrl, grpc.WithInsecure())
+	// using WithInsecure() because no SSL running
+	cc, err := grpc.Dial(c.AuthSvcUrl, grpc.WithInsecure())
 
-    if err != nil {
-        fmt.Println("Could not connect:", err)
-    }
+	if err != nil {
+		fmt.Println("Could not connect:", err)
+	}
 
-    return pb.NewAuthServiceClient(cc)
+	return pb.NewAuthServiceClient(cc)
 }
